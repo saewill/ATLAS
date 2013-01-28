@@ -1,0 +1,6 @@
+#!/bin/bash
+#$Id: dcache-admin,v 1.3 2009/12/17 18:02:29 sarah Exp $
+
+[ $(id -u) == 0 ] && x='-0'
+ssh -oStrictHostKeyChecking=no -c blowfish -p 22223 -i /usr/local/dcache/lib/dcache_admin.key$x admin@dcache-admin.mwt2.org
+
