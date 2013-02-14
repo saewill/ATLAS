@@ -6,4 +6,6 @@ we hae found that the NVRAM on older terminal servers is not as stable as we
 would like.
 
 Usage: ssh_serial [machine]
+
 Serial map format: [machine] [terminal server] [port] 
+
