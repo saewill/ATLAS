@@ -3,10 +3,8 @@
 # $Id: poolboy.sh,v 1.7 2011/02/14 21:33:31 cgw Exp $
 
 PATH=/usr/local/bin:$PATH # for dcache-admin
-
+. /usr/local/dcache/setup.sh
 # Comma-separated list of offlined pools
-#offline_pools="iut2-s1_1,iut2-s1_2,iut2-s1_3,iut2-s1_4,iut2-s2_1,iut2-s2_2,iut2-s2_3,iut2-s2_4,iut2-s3_1,iut2-s3_2,iut2-s3_3,iut2-s3_4,iut2-s4_1,iut2-s4_2,iut2-s4_3,iut2-s4_4,iut2-s4_5,iut2-s4_6,iut2-s5_1,iut2-s5_2,iut2-s5_3,iut2-s5_4,iut2-s5_5,iut2-s5_6,iut2-s6_1,iut2-s6_2,iut2-s6_3,iut2-s6_4,iut2-s6_5,iut2-s6_6"
-#offline_pools="iut2-s4_1,iut2-s4_2,iut2-s4_3,iut2-s4_4,iut2-s4_5,iut2-s4_6,iut2-s5_1,iut2-s5_2,iut2-s5_3,iut2-s5_4,iut2-s5_5,iut2-s5_6,iut2-s6_1,iut2-s6_2,iut2-s6_3,iut2-s6_4,iut2-s6_5,iut2-s6_6"
 offline_pools="uct2-s1_*,uct2-s2_*,uct2-s3_*"
 
 
@@ -36,26 +34,13 @@ fi
 POOL_HOSTS=$(echo $reserved_pools $default_pools | tr ' ' '\n' | cut -d_ -f1 | sort | uniq)
 # Clear any existing "poolboy" migrations
 
-(for pool in $reserved_pools ; do
-    ids=$(
-	echo -e "cd $pool\nmigration ls\n..\nlogoff\n" | 
-	dcache-admin 2>/dev/null | 
-	strings                  | 
-	egrep 'RUNNING|SLEEPING' | 
-	grep poolboy             |
-	cut -d\  -f1            )
-    if [[ -n "$ids" ]] ; then
-	echo  cd $pool
-        for id in $ids; do 
-	    id=$(tr -d '[]'  <<< $id )
-	    echo -e migration cancel $id -force
-        done
-	echo migration clear
-        echo ..
-   fi
-done
-echo logoff ) | dcache-admin
 
+list_migrations.sh |
+	grep poolboy |
+	egrep 'RUNNING|SLEEPING' |
+	while read pool id junk; do 
+		echo -e "cd $pool\nmigration cancel $id -force\nmigration clear\n.."
+	done | dcache-admin
 
 exclude="poolboy" # marker
 if [[ -n "$offline_pools" ]]; then exclude="$exclude,$offline_pools"; fi
@@ -78,7 +63,7 @@ if [[ -n "$offline_pools" ]]; then exclude="$exclude,$offline_pools"; fi
      done >/tmp/poolboy.$$
     cat /tmp/poolboy.$$ | sort -rn  | cut -f2 -d' ' | head -$max_migrations | while read pool; do
 	echo cd $pool
-	echo migration move -select=random -concurrency=$concurrency -exclude=$exclude -target=pgroup reserved
+	echo migration move -select=random -concurrency=$concurrency -exclude=$exclude -order=lru -target=pgroup reserved
 	echo ..
 	done
     echo logoff )  | dcache-admin
