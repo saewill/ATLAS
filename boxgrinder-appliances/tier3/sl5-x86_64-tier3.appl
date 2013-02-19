@@ -156,3 +156,5 @@ post:
     - "/sbin/chkconfig ntpd on"
     - "/sbin/chkconfig iptables off"
     - "/sbin/chkconfig ip6tables off"
+    - "/sbin/chkconfig condor on"
+    - "/sbin/chkconfig gmond on" 
