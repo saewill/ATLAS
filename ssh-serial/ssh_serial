@@ -1,0 +1,79 @@
+#!/usr/bin/python
+# Maps ports to arbitrary aliases for cyclades servers. 
+# Usage: "ssh_serial [machine]" as defined by serial_port_map.conf
+
+import os, pprint, sys, re
+
+serial_map_file = "/usr/local/etc/serial_port_map.conf"
+usage = "Usage: ssh_serial [machine]"
+ssh_path = "/usr/bin/ssh"
+
+
+def ssh_to(machine, server, port):
+    address = "admin:%s@%s" % (port, server)
+    print "Using %s (%s)" % (address, machine)
+    print "~. to exit (~~. if you're ssh'd into mgt)"
+    os.execv(ssh_path, (ssh_path, address))
+
+def main(*args):
+    if len(args) != 2:
+        return -1
+
+    tgt_machine = None
+    tgt_server = None
+    # list of tuples: (machine, server, port) that is added to if the wanted machine's
+    # name is contained within any machines in the configuration
+    possible_machines = []
+
+
+    wanted = sys.argv[1]
+
+    try:
+        serial_map_fd = open(serial_map_file, "r")
+    except IOError:
+        print "Missing serial map file at %s!" % serial_map_file
+
+
+    p = re.compile("^([\w-]+)[ \t]+(ts\d+)[ \t]+(0[1-9]|1[0-9]|2[0-9]|3[0-2]|[0-9])$")
+    for line in serial_map_fd.readlines():
+        line = line.strip()
+        if line.startswith("#"):
+            continue
+        elif line.startswith(" "):
+            continue
+        elif line.isspace():
+            continue
+
+        match = p.match(line)
+        if not match:
+            continue
+        machine, server, port = match.groups()
+        if machine == wanted:
+            tgt_machine = machine
+            tgt_server = server
+            tgt_port   = "70" + port ## ports start with 70xx on the cyclades ##
+            break
+        elif wanted in machine:
+            possible_machines.append((machine, server))
+
+
+    if tgt_machine and tgt_server and tgt_port:
+        ssh_to(tgt_machine, tgt_server, tgt_port)
+
+    elif possible_machines:
+        if len(possible_machines) == 1:
+            ssh_to(*possible_machines[0])
+        else:
+            print "Ambiguous target %s. Matches:" % wanted
+            for machine, server in possible_machines:
+                print ("%s@%s" % (machine, server))
+            return 1
+    else:
+        print "No matches for %s" % wanted
+        return 1
+
+
+
+if __name__ == "__main__":
+    ret_val = main(*sys.argv)
+    sys.exit(ret_val)
