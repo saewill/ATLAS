@@ -1,0 +1,8 @@
+repository_start() {
+  rm -f /opt/hone
+  ln -s $CVMFS_MOUNT_DIR/hone.cern.ch /opt/hone
+}
+
+repository_stop() {
+   [ -L /opt/hone ] && rm -f /opt/hone
+}

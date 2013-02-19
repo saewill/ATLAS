@@ -1,0 +1,22 @@
+# sshd config for MWT2 hosts
+# No v1:
+Protocol 2
+# No passwords
+PermitRootLogin without-password
+PasswordAuthentication no
+PermitEmptyPasswords no
+UsePAM no
+# Hostbased and pubkey yes
+PubkeyAuthentication yes
+ChallengeResponseAuthentication no
+X11Forwarding no
+# sftp
+Subsystem       sftp    /usr/libexec/openssh/sftp-server
+# Hostbased 
+HostbasedAuthentication yes
+IgnoreRhosts no
+#HostbasedUsesNameFromPacketOnly yes
+# Added to restrict ssh access
+#AllowGroups t2admins root nagios usatlas osgvo
+     SyslogFacility AUTHPRIV
+     LogLevel INFO

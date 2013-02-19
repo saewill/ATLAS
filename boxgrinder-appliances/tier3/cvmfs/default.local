@@ -1,0 +1,4 @@
+CVMFS_REPOSITORIES=atlas,atlas-condb,atlas-nightlies
+CVMFS_HTTP_PROXY="http://uct2-grid1.uchicago.edu:3128;http://mwt2-squid.campuscluster.illinois.edu:3128|http://iut2-squid.iu.edu:3128;DIRECT"
+CVMFS_CACHE_BASE=/home/cvmfs
+CVMFS_QUOTA_LIMIT=5120

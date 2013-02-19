@@ -1,0 +1,9 @@
+#!/bin/sh
+
+repository_start() {
+   [ ! -L /opt/hepsoft ] && ln -s $CVMFS_MOUNT_DIR/hepsoft.cern.ch /opt/hepsoft
+}
+
+repository_stop() {
+   [ -L /opt/hepsoft ] && rm -f /opt/hepsoft
+}

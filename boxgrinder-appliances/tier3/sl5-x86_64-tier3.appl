@@ -1,0 +1,147 @@
+name: sl5-x86_64-tier3
+summary: Base configuration for a virtualized ATLAS tier 3. 
+version: 1
+release: 1
+os:
+  name: sl
+  version: 5
+  
+hardware:
+  cpus: 1
+  memory: 2048 
+  partitions:
+    "/":
+      size: 5
+      
+packages:
+  - bind-utils
+  #- cloudconfig
+  - condor
+  - curl
+  - dhclient
+  - lsof
+  - ntp
+  - openssh-clients
+  - openssh-server
+  - subversion
+  - vim-enhanced
+  - wget
+  - yum
+  - zsh
+  - bash
+  - ksh
+  - tcsh
+  - git
+  - agrep
+  - anacron
+  - automake
+  - blas
+  - busybox
+  - bzip2
+  - chkconfig
+  - crontabs
+  - cvmfs
+  - cvmfs-keys
+  - cvmfs-init-scripts
+  - cvs
+  - dcap
+  - dcap-libs
+  - xrootd-client
+  - xrootd-fuse
+  - xrootd-libs
+  - vim-common
+  - vim-enhanced
+  - wget
+  - which
+  - file
+  - tzdata
+  - tzdata-java
+  - tree
+  - mtr
+  - strace
+  - tar
+  - rpm
+  - sl-release
+  - perl
+  - perl-Compress-Zlib
+  - perl-Config-Tiny
+  - perl-Crypt-DES
+  - perl-Crypt-Rijndael
+  - perl-Digest-HMAC
+  - perl-Digest-SHA1
+  - perl-Error
+  - perl-Git
+  - perl-HTML-Parser
+  - perl-HTML-Tagset
+  - perl-libwww-perl
+  - perl-Net-SNMP
+  - perl-String-CRC32
+  - perl-Test-Manifest
+  - perl-URI
+  - passwd
+  - pcre
+  - openssl
+  - man
+  - man-pages
+  - make
+  - java-1.6.0-openjdk
+
+ 
+default_repos: false # default is true
+
+repos:
+
+
+#  - name: "centos-plus"
+#    baseurl: "http://dev.racf.bnl.gov/yum/grid/external/rhel/5Client/x86_64"  
+
+   - name: "SL-55-x86_64"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/SL-55-x86_64"
+
+   - name: "SL-55-x86_64-security"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/SL-55-x86_64-security"
+
+   - name: "EPEL-x86_64"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/EPEL-x86_64"  
+
+   - name: "MWT2"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/MWT2"
+
+files:
+
+  "/root/.ssh":
+    - "authorized_keys"
+    - ".shosts"
+
+  "/etc":
+    - "ntp/step-tickers"
+    - "sysconfig/selinux"
+    - "ssh/sshd_config"
+    - "ssh/ssh_known_hosts" 
+    - "ssh/shosts.equiv"
+    - "condor/config.d/10-base.conf"
+    - "condor/config.d/20-daemon.conf"
+    - "condor/config.d/50-classads.conf"
+    - "inittab"
+
+post:
+  base:
+    #- "chmod +x /etc/init.d/cloudconfig"   
+    #- "/sbin/chkconfig cloudconfig on"
+    - "sed -i '/hiddenmenu/ a\serial --unit=0 --speed=115200 \nterminal --timeout=5 serial console ' /boot/grub/grub.conf; sed -i '/kernel/ s/$/ console=tty0 console=ttyS0,115200/g' /boot/grub/grub.conf"
+    - "echo 'uct3-s1.mwt2.org:/export/home   /share/home     nfs     bg,intr,noatime 0       0' >> /etc/fstab" 
+    - "echo 'uct3-s1:/export/t3data	/share/t3data	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1:/export/t3data2	/share/t3data2	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1:/export/t3data3	/share/t3data3	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct2-dc4.mwt2.org:/pnfs/uchicago.edu    /pnfs/uchicago.edu      nfs     udp,bg,intr,noac,nosuid,nodev,vers=3    0       0' >> /etc/fstab"
+    - "mkdir -p /share/{home,t3data,t3data2,t3data3}"
+    - "mkdir -p /pnfs/uchicago.edu"
+  
+# SSH
+    - "chown -R root:root /root/.ssh"  
+    - "chmod -R go-rwx /root/.ssh"
+    - "chmod +x /etc/rc.local"
+    - "/sbin/chkconfig sshd on"
+    - "/sbin/chkconfig ntpd on"
+    - "/sbin/chkconfig iptables off"
+    - "/sbin/chkconfig ip6tables off"

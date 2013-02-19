@@ -1,0 +1,5 @@
+CVMFS_REPOSITORIES=atlas,atlas-condb,atlas-nightlies,geant4,grid,sft
+CVMFS_HTTP_PROXY="http://cvmfs02.racf.bnl.gov:8000|http://cvmfs03.racf.bnl.gov:8000;DIRECT"
+CVMFS_CACHE_BASE=/home/cvmfs
+CVMFS_QUOTA_LIMIT=5120
+

@@ -1,0 +1,7 @@
+#!/bin/sh
+MODULES="fuse"
+for i in $MODULES ; do
+        modprobe $i >/dev/null 2>&1
+done
+
+
