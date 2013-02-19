@@ -1,7 +1,7 @@
 name: sl5-x86_64-tier3
 summary: Base configuration for a virtualized ATLAS tier 3. 
 version: 1
-release: 2
+release: 3
 os:
   name: sl
   version: 5
@@ -127,8 +127,10 @@ files:
     - "ssh/sshd_config"
     - "ssh/ssh_known_hosts" 
     - "ssh/shosts.equiv"
+    - "condor/condor_config"
     - "condor/config.d/10-base.conf"
     - "condor/config.d/20-daemon.conf"
+    - "condor/config.d/30-flocking.conf"
     - "condor/config.d/50-classads.conf"
     - "inittab"
     - "ganglia/gmond.conf"
