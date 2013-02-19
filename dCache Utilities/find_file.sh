@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. /usr/local/dcache/setup.sh
+
 f=$1
 if echo $f | grep -q '^00' ; then
     id=$f
@@ -10,6 +12,6 @@ else
         exit 1
     fi
 fi
-dcmd.sh "ls /dcache/pool*/data/$id 2>/dev/null" uct2-s[14] iut2-s[6].iu.edu
+dcmd.sh "ls /dcache/pool*/data/$id 2>/dev/null" $( pool_list | cut -f1 -d_ | sort -u )
 
 
