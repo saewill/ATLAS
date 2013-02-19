@@ -1,7 +1,7 @@
 name: sl5-x86_64-tier3
 summary: Base configuration for a virtualized ATLAS tier 3. 
 version: 1
-release: 1
+release: 2
 os:
   name: sl
   version: 5
@@ -43,6 +43,8 @@ packages:
   - cvmfs
   - cvmfs-keys
   - cvmfs-init-scripts
+  - ganglia-gmond
+  - ganglia-gmond-modules-python 
   - cvs
   - dcap
   - dcap-libs
@@ -106,6 +108,12 @@ repos:
 
    - name: "MWT2"
      baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/MWT2"
+   
+   - name: "t3monstable"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/t3monstable"
+
+   - name; "t3monexternal"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/t3monexternal"
 
 files:
 
@@ -123,6 +131,7 @@ files:
     - "condor/config.d/20-daemon.conf"
     - "condor/config.d/50-classads.conf"
     - "inittab"
+    - "ganglia/gmond.conf"
 
 post:
   base:
