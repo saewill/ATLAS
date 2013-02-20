@@ -112,7 +112,7 @@ repos:
    - name: "t3monstable"
      baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/t3monstable"
 
-   - name; "t3monexternal"
+   - name: "t3monexternal"
      baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/t3monexternal"
 
 files:
