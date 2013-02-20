@@ -153,6 +153,7 @@ files:
     - "fuse.conf"
     - "ganglia/gmond.conf"
     - "init.d/cloudconfig"
+    - "sysconfig/cloudconfig"
 
 post:
   base:
