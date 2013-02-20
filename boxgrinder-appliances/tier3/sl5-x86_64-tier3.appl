@@ -15,7 +15,7 @@ hardware:
       
 packages:
   - bind-utils
-  #- cloudconfig
+  - cloudconfig
   - condor
   - curl
   - dhclient
@@ -155,8 +155,8 @@ files:
 
 post:
   base:
-    #- "chmod +x /etc/init.d/cloudconfig"   
-    #- "/sbin/chkconfig cloudconfig on"
+    - "chmod +x /etc/init.d/cloudconfig"   
+    - "/sbin/chkconfig cloudconfig on"
     - "sed -i '/hiddenmenu/ a\serial --unit=0 --speed=115200 \nterminal --timeout=5 serial console ' /boot/grub/grub.conf; sed -i '/kernel/ s/$/ console=tty0 console=ttyS0,115200/g' /boot/grub/grub.conf"
     - "echo 'uct3-s1.mwt2.org:/export/home   /share/home     nfs     bg,intr,noatime 0       0' >> /etc/fstab" 
     - "echo 'uct3-s1:/export/t3data	/share/t3data	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
