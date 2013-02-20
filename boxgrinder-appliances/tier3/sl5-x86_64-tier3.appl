@@ -152,6 +152,7 @@ files:
     - "auto.master"
     - "fuse.conf"
     - "ganglia/gmond.conf"
+    - "init.d/cloudconfig"
 
 post:
   base:
