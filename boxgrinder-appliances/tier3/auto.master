@@ -1,0 +1,4 @@
+/misc  /etc/auto.misc
+/net -hosts
++auto.master
+/cvmfs /etc/auto.cvmfs
