@@ -165,8 +165,6 @@ post:
     - "echo 'uct2-dc4.mwt2.org:/pnfs/uchicago.edu    /pnfs/uchicago.edu      nfs     udp,bg,intr,noac,nosuid,nodev,vers=3    0       0' >> /etc/fstab"
     - "mkdir -p /share/{home,t3data,t3data2,t3data3}"
     - "mkdir -p /pnfs/uchicago.edu"
-  
-# SSH
     - "chown -R root:root /root/.ssh"  
     - "chmod -R go-rwx /root/.ssh"
     - "chmod +x /etc/rc.local"
@@ -176,3 +174,4 @@ post:
     - "/sbin/chkconfig ip6tables off"
     - "/sbin/chkconfig condor on"
     - "/sbin/chkconfig gmond on" 
+    - "/usr/sbin/useradd -m uct3"
