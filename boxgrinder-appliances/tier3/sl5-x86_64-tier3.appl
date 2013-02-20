@@ -53,6 +53,7 @@ packages:
   - xrootd-libs
   - vim-common
   - vim-enhanced
+  - htop
   - wget
   - which
   - file
