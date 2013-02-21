@@ -14,6 +14,7 @@ hardware:
       size: 5
       
 packages:
+  - @core
   - bind-utils
   - cloudconfig
   - condor
@@ -162,9 +163,9 @@ post:
     - "/sbin/chkconfig cloudconfig on"
     - "sed -i '/hiddenmenu/ a\serial --unit=0 --speed=115200 \nterminal --timeout=5 serial console ' /boot/grub/grub.conf; sed -i '/kernel/ s/$/ console=tty0 console=ttyS0,115200/g' /boot/grub/grub.conf"
     - "echo 'uct3-s1.mwt2.org:/export/home   /share/home     nfs     bg,intr,noatime 0       0' >> /etc/fstab" 
-    - "echo 'uct3-s1:/export/t3data	/share/t3data	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
-    - "echo 'uct3-s1:/export/t3data2	/share/t3data2	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
-    - "echo 'uct3-s1:/export/t3data3	/share/t3data3	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1.mwt2.org:/export/t3data	/share/t3data	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1.mwt2.org:/export/t3data2	/share/t3data2	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1.mwt2.org:/export/t3data3	/share/t3data3	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
     - "echo 'uct2-dc4.mwt2.org:/pnfs/uchicago.edu    /pnfs/uchicago.edu      nfs     udp,bg,intr,noac,nosuid,nodev,vers=3    0       0' >> /etc/fstab"
     - "mkdir -p /share/{home,t3data,t3data2,t3data3}"
     - "mkdir -p /pnfs/uchicago.edu"
