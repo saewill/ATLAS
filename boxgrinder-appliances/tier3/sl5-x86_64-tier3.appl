@@ -1,19 +1,20 @@
 name: sl5-x86_64-tier3
 summary: Base configuration for a virtualized ATLAS tier 3. 
 version: 1
-release: 4
+release: 5
 os:
   name: sl
   version: 5
   
 hardware:
-  cpus: 4
-  memory: 8192 
+  cpus: 1
+  memory: 2048 
   partitions:
     "/":
       size: 5
       
 packages:
+  - @core
   - bind-utils
   - cloudconfig
   - condor
@@ -88,6 +89,7 @@ packages:
   - man-pages
   - make
   - java-1.6.0-openjdk
+  - libaio
 
  
 default_repos: false # default is true
@@ -120,7 +122,6 @@ files:
 
   "/root/.ssh":
     - "authorized_keys"
-    - ".shosts"
 
   "/etc":
     - "ntp/step-tickers"
@@ -138,18 +139,12 @@ files:
     - "sysconfig/modules/fuse.modules"
     - "cvmfs/default.local"
     - "cvmfs/domain.d/cern.ch.local"
-    - "cvmfs/config.d/alice.cern.ch.conf"
-    - "cvmfs/config.d/lcd.cern.ch.conf"
-    - "cvmfs/config.d/sft.cern.ch.local"
-    - "cvmfs/config.d/hepsoft.cern.ch.conf"
     - "cvmfs/config.d/atlas.cern.ch.local"
     - "cvmfs/config.d/grid.cern.ch.local"
     - "cvmfs/config.d/atlas-condb.cern.ch.local"
     - "cvmfs/config.d/atlas-nightlies.cern.ch.local"
     - "cvmfs/config.d/atlas-nightlies.cern.ch.conf"
     - "cvmfs/config.d/grid.cern.ch.conf"
-    - "cvmfs/config.d/geant4.cern.ch.local"
-    - "cvmfs/config.d/hone.cern.ch.conf"
     - "auto.master"
     - "fuse.conf"
     - "ganglia/gmond.conf"
@@ -162,9 +157,9 @@ post:
     - "/sbin/chkconfig cloudconfig on"
     - "sed -i '/hiddenmenu/ a\serial --unit=0 --speed=115200 \nterminal --timeout=5 serial console ' /boot/grub/grub.conf; sed -i '/kernel/ s/$/ console=tty0 console=ttyS0,115200/g' /boot/grub/grub.conf"
     - "echo 'uct3-s1.mwt2.org:/export/home   /share/home     nfs     bg,intr,noatime 0       0' >> /etc/fstab" 
-    - "echo 'uct3-s1:/export/t3data	/share/t3data	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
-    - "echo 'uct3-s1:/export/t3data2	/share/t3data2	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
-    - "echo 'uct3-s1:/export/t3data3	/share/t3data3	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1.mwt2.org:/export/t3data	/share/t3data	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1.mwt2.org:/export/t3data2	/share/t3data2	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
+    - "echo 'uct3-s1.mwt2.org:/export/t3data3	/share/t3data3	nfs	bg,intr,noatime	0	0' >> /etc/fstab"
     - "echo 'uct2-dc4.mwt2.org:/pnfs/uchicago.edu    /pnfs/uchicago.edu      nfs     udp,bg,intr,noac,nosuid,nodev,vers=3    0       0' >> /etc/fstab"
     - "mkdir -p /share/{home,t3data,t3data2,t3data3}"
     - "mkdir -p /pnfs/uchicago.edu"
