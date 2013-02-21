@@ -7,8 +7,8 @@ os:
   version: 5
   
 hardware:
-  cpus: 1
-  memory: 2048 
+  cpus: 4
+  memory: 8192 
   partitions:
     "/":
       size: 5
