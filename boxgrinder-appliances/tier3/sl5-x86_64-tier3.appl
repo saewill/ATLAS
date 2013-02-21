@@ -1,14 +1,14 @@
 name: sl5-x86_64-tier3
 summary: Base configuration for a virtualized ATLAS tier 3. 
 version: 1
-release: 4
+release: 5
 os:
   name: sl
   version: 5
   
 hardware:
-  cpus: 4
-  memory: 8192 
+  cpus: 1
+  memory: 2048 
   partitions:
     "/":
       size: 5
@@ -89,6 +89,7 @@ packages:
   - man-pages
   - make
   - java-1.6.0-openjdk
+  - libaio
 
  
 default_repos: false # default is true
@@ -121,14 +122,11 @@ files:
 
   "/root/.ssh":
     - "authorized_keys"
-    - ".shosts"
 
   "/etc":
     - "ntp/step-tickers"
     - "sysconfig/selinux"
     - "ssh/sshd_config"
-    - "ssh/ssh_known_hosts" 
-    - "ssh/shosts.equiv"
     - "condor/condor_config"
     - "condor/config.d/10-base.conf"
     - "condor/config.d/20-daemon.conf"
@@ -139,18 +137,10 @@ files:
     - "sysconfig/modules/fuse.modules"
     - "cvmfs/default.local"
     - "cvmfs/domain.d/cern.ch.local"
-    - "cvmfs/config.d/alice.cern.ch.conf"
-    - "cvmfs/config.d/lcd.cern.ch.conf"
-    - "cvmfs/config.d/sft.cern.ch.local"
-    - "cvmfs/config.d/hepsoft.cern.ch.conf"
     - "cvmfs/config.d/atlas.cern.ch.local"
-    - "cvmfs/config.d/grid.cern.ch.local"
     - "cvmfs/config.d/atlas-condb.cern.ch.local"
     - "cvmfs/config.d/atlas-nightlies.cern.ch.local"
     - "cvmfs/config.d/atlas-nightlies.cern.ch.conf"
-    - "cvmfs/config.d/grid.cern.ch.conf"
-    - "cvmfs/config.d/geant4.cern.ch.local"
-    - "cvmfs/config.d/hone.cern.ch.conf"
     - "auto.master"
     - "fuse.conf"
     - "ganglia/gmond.conf"
