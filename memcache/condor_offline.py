@@ -8,22 +8,24 @@
 import memcache, sys
 usage = 'condor_offline.py o hostname reason or condor_offline.py c hostname'
 def mem_get ( token ) :
-        mc = memcache.Client(['mc.mwt2.org:11211'])
-        return mc.get(token)
+  mc = memcache.Client(['mc.mwt2.org:11211'])
+  return mc.get(token)
 def mem_put ( token , value ) :
-        mc = memcache.Client(['mc.mwt2.org:11211'])
-        mc.set( token, value )
-op = sys.argv[1]
-host = sys.argv[2]
-if op == 'o' :
-	reason = sys.argv[3]
-	mem_put("%s.manualstatus" % host, 'offline')
-	mem_put("%s.manualreason" % host, reason )
-        print "%s set offline with reason %s" % (host, reason)
-elif op == 'c' :
-        mem_put("%s.manualstatus" % host, 'online')
-        mem_put("%s.manualreason" % host, '' )
-        print "%s set online" % host
+  mc = memcache.Client(['mc.mwt2.org:11211'])
+  mc.set( token, value )
+if len(sys.argv) != 3:
+  print usage
 else:
-        print usage
-
+  op = sys.argv[1]
+  host = sys.argv[2]
+  if op == 'o' :
+    reason = sys.argv[3]
+    mem_put("%s.manualstatus" % host, 'offline')
+    mem_put("%s.manualreason" % host, reason )
+    print "%s set offline with reason %s" % (host, reason)
+  elif op == 'c' :
+    mem_put("%s.manualstatus" % host, 'online')
+    mem_put("%s.manualreason" % host, '' )
+    print "%s set online" % host
+  else:
+    print usage

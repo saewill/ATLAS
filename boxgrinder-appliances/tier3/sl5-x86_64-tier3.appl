@@ -1,7 +1,7 @@
 name: sl5-x86_64-tier3
 summary: Base configuration for a virtualized ATLAS tier 3. 
-version: 1
-release: 5
+version: 2
+release: 1
 os:
   name: sl
   version: 5
