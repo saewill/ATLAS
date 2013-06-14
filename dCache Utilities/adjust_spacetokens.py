@@ -10,6 +10,8 @@ MIN_SIZE = 5 * TB # Default minimum for a space token reservation
 CAP = 1000 * TB   # Default cap - above this size the token will be assigned
                   #               used space + CAP_FREE
 CAP_FREE =  0.1 * CAP
+
+debug = False
  
 #Caps for specific space tokens.
 CAP_SPECIFIC= { 'ATLASPRODDISK': { 'SIZE': 250*TB, 'FREE': 25*TB },
@@ -17,11 +19,13 @@ CAP_SPECIFIC= { 'ATLASPRODDISK': { 'SIZE': 250*TB, 'FREE': 25*TB },
 
 #Minimums for specific space tokens.  It will check that it is no more than
 #PERCENT full, and that it has at least FREE space unused
-MIN_SPECIFIC= { 'ATLASPRODDISK':    { 'FREE': 5*TB, 'PERCENT': 80.0 }, 
-                'ATLASUSERDISK':    { 'FREE': 5*TB, 'PERCENT': 80.0 },
-                'ATLASSCRATCHDISK': { 'FREE': 5*TB, 'PERCENT': 80.0 } }
+MIN_SPECIFIC= { 'ATLASPRODDISK':    { 'FREE': 5*TB, 'PERCENT': 79.0 }, 
+                'ATLASUSERDISK':    { 'FREE': 5*TB, 'PERCENT': 79.0 },
+                'ATLASSCRATCHDISK': { 'FREE': 5*TB, 'PERCENT': 79.0 } }
 
 def run(cmd):
+    if debug:
+        print "running cmd %s" % cmd
     p = os.popen(cmd)
     output = p.readlines()
     status = p.close()
@@ -64,7 +68,6 @@ reservations = [R(x.strip()) for x in srm_info if 'description' in x]
 reservations = [ r for r in reservations if 'test' not in r.description.lower()]
 reservations.sort(lambda a,b: cmp(a.description, b.description))
 
-
 for r in reservations:
     if r.size == 0:
         r.size=0.01
@@ -72,6 +75,12 @@ for r in reservations:
         #sys.exit(1)
     r.free = r.size-(r.used+r.allocated)
     r.usage = (r.used+r.allocated)/float(r.size)
+
+if debug:
+    print "reservations at start:"
+    for r in reservations:
+        print r
+
 
 # Note - we should probably look at link group ID here
 reservations = [r for r in reservations if 'TEST' not in r.description]
@@ -90,6 +99,10 @@ if tot_size==0:
 usage = (tot_used+tot_alloc)/float(tot_size)
 
 factor = 1.0 / max(usage, 0.01)
+
+if debug:
+    print  map(unitize, (tot_size, tot_used, tot_alloc, tot_free ))
+
 adj_reservations=[]
 
 rationale={}
@@ -124,7 +137,6 @@ for r in tmp_res:
     tot_free = tot_size - (tot_used + tot_alloc)
 
 
-
 #print adj_reservations
 #print rationale
 
@@ -138,9 +150,12 @@ for r in reservations:
 for r in reservations:
     r.size= (r.used + r.allocated )* factor
     r.free = r.size - (r.used + r.allocated)
-
-for r  in reservations:
+#print ""
+for r  in adj_reservations:
     print r.description, r.id, int(r.size)
-for r in adj_reservations:
+    #print r
+#print ""
+for r in reservations:
     print r.description, r.id, int(r.size)
+    #print r
 
