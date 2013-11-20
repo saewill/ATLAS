@@ -5,7 +5,12 @@ import memcache
 
 verbose = False
 mc = None
-suppressEmptyEmails = True
+
+#-1 to send emails regardless of how many jobs to report
+# 0 to suppress empty emails
+#else, only report if the number of jobs is greater than minJobsToReport
+minJobsToReport = 0
+
 MIN_WALLTIME=3 #hours
 MAX_EFF=5 #percent 
 PANDA_URL='http://panda.cern.ch/server/pandamon/query?job='
@@ -40,8 +45,8 @@ def strip_chars(x):
 
 def write_email_header(jobs, ofile=sys.stdout):
     emptyFlag = 'sys/sjr/EmptyJobsList'
-    #create a flag if there are no jobs
-    if (suppressEmptyEmails and not jobs):
+    #create a flag if the number of jobs is <= minJobsToReport
+    if (len(jobs) <= minJobsToReport):
         f = open(emptyFlag, 'w')
         f.close()
     else:
