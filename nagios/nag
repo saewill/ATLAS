@@ -44,7 +44,7 @@ def main(arglist):
             operation = "on"
         elif o in ("-d", "--off"):
             operation = "off"
-	elif o in ("-d", "--downtime"):
+	      elif o in ("-t", "--downtime"):
             operation = "downtime"
             try:
                a = float(a)
