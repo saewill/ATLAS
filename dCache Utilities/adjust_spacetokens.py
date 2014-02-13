@@ -3,29 +3,30 @@
 # $Id: adjust_spacetokens.py,v 1.4 2011/07/05 17:42:27 cgw Exp $
 
 import sys, os, time
+from datetime import datetime
 
 GB = 1000*1000*1000
 TB = GB*1000
 MIN_SIZE = 5 * TB # Default minimum for a space token reservation
 CAP = 1000 * TB   # Default cap - above this size the token will be assigned
                   #               used space + CAP_FREE
-CAP_FREE =  0.1 * CAP
+CAP_FREE =  5 * TB
 
-debug = False
+debug = True
  
 #Caps for specific space tokens.
-CAP_SPECIFIC= { 'ATLASPRODDISK': { 'SIZE': 250*TB, 'FREE': 25*TB },
+CAP_SPECIFIC= { 'ATLASPRODDISK': { 'SIZE': 250*TB, 'FREE': 25*TB } ,
                 'ATLASDATADISK': {'SIZE': 1300*TB, 'FREE': 100*TB} }
 
 #Minimums for specific space tokens.  It will check that it is no more than
 #PERCENT full, and that it has at least FREE space unused
 MIN_SPECIFIC= { 'ATLASPRODDISK':    { 'FREE': 5*TB, 'PERCENT': 79.0 }, 
                 'ATLASUSERDISK':    { 'FREE': 5*TB, 'PERCENT': 79.0 },
-                'ATLASSCRATCHDISK': { 'FREE': 5*TB, 'PERCENT': 79.0 } }
+                'ATLASSCRATCHDISK': { 'FREE': 10*TB, 'PERCENT': 79.0 } }
 
 def run(cmd):
     if debug:
-        print "running cmd %s" % cmd
+        print  >> sys.stderr, "running cmd %s" % cmd
     p = os.popen(cmd)
     output = p.readlines()
     status = p.close()
@@ -63,6 +64,8 @@ status, srm_info = run("""
 #    print "Error getting data from SrmSpaceManager", status
 #    #sys.exit(1)
 
+if debug:
+    print  >> sys.stderr,"Adjuster starting %s" % datetime.now()
 
 reservations = [R(x.strip()) for x in srm_info if 'description' in x]
 reservations = [ r for r in reservations if 'test' not in r.description.lower()]
@@ -77,9 +80,9 @@ for r in reservations:
     r.usage = (r.used+r.allocated)/float(r.size)
 
 if debug:
-    print "reservations at start:"
+    print >> sys.stderr, "reservations at start:"
     for r in reservations:
-        print r
+        print  >> sys.stderr, r
 
 
 # Note - we should probably look at link group ID here
@@ -89,8 +92,8 @@ tot_size = sum([r.size for r in reservations])
 reserved_link_line = [l for l in srm_info if 'Name:reserved-link-group' in l][0]
 avail_tok = [t for t in reserved_link_line.split() if t.startswith("AvailableSpace:")][0]
 avail =  int(avail_tok.split(':')[1])
-
-tot_size = sum([r.size for r in reservations]) + avail
+# Avail number appears to be no longer reliable, removing --Sarah
+tot_size = sum([r.size for r in reservations])# + avail
 tot_used = sum([r.used for r in reservations])
 tot_alloc = sum([r.allocated for r in reservations])
 tot_free = tot_size - (tot_used+tot_alloc)
@@ -101,61 +104,66 @@ usage = (tot_used+tot_alloc)/float(tot_size)
 factor = 1.0 / max(usage, 0.01)
 
 if debug:
-    print  map(unitize, (tot_size, tot_used, tot_alloc, tot_free ))
+    print  >> sys.stderr,  map(unitize, (tot_size, tot_used, tot_alloc, tot_free ))
 
 adj_reservations=[]
 
 rationale={}
 
-tmp_res = reservations[:] # Copy of array for use in loop
+for i in range(0,2):
+    tmp_res = reservations[:] # Copy of array for use in loop
 
-# Loop through reservations, and see if need to be adjusted to fit minimum or maximum cap requirements
-for r in tmp_res:
-    if( (r.used + r.allocated )* factor < MIN_SIZE ):
-        rationale[r.description]='MIN_SIZE'
-        r.size=MIN_SIZE
-    elif ( r.description in CAP_SPECIFIC.keys() and r.used > CAP_SPECIFIC[r.description]['SIZE'] ):
-        rationale[r.description]='CAP_SPECIFIC'
-        r.size = r.used + CAP_SPECIFIC[r.description]['FREE']
-    elif ( r.used > CAP and r.description not in CAP_SPECIFIC.keys()):
-        rationale[r.description]='CAP'
-        r.size = r.used + CAP_FREE
-    elif ( r.description in MIN_SPECIFIC.keys() and (100.0*(r.allocated+r.used)/r.size) > MIN_SPECIFIC[r.description]['PERCENT']):
-        rationale[r.description]='MIN_SPECIFIC_PERCENT'
-        f = 100.0/MIN_SPECIFIC[r.description]['PERCENT']
-        r.size = (r.used+r.allocated) * f
-    elif (  r.description in MIN_SPECIFIC.keys() and (r.size - (r.allocated+r.used)) < MIN_SPECIFIC[r.description]['FREE']):
-        rationale[r.description]='MIN_SPECIFIC_FREE'
-        r.size=r.used+r.allocated+MIN_SPECIFIC[r.description]['FREE']
-    else:
-        continue # If the reservation does not need to be adjusted, move on to the next reservation
-    adj_reservations.append(r) 
-    reservations.remove(r)
-    tot_size -= r.size
-    tot_used -= r.used
-    tot_alloc -= tot_alloc
-    tot_free = tot_size - (tot_used + tot_alloc)
+    # Loop through reservations, and see if need to be adjusted to fit minimum or maximum cap requirements
+    for r in tmp_res:
+        if( (r.used + r.allocated )* factor < MIN_SIZE ):
+            rationale[r.description]='MIN_SIZE'
+            r.size=MIN_SIZE
+        elif ( r.description in CAP_SPECIFIC.keys() and r.used > CAP_SPECIFIC[r.description]['SIZE'] ):
+            rationale[r.description]='CAP_SPECIFIC'
+            r.size = r.used + CAP_SPECIFIC[r.description]['FREE']
+        elif ( r.used > CAP and r.description not in CAP_SPECIFIC.keys()):
+            rationale[r.description]='CAP'
+            r.size = r.used + CAP_FREE
+        elif ( r.description in MIN_SPECIFIC.keys() and (100.0*(r.allocated+r.used)/r.size) > MIN_SPECIFIC[r.description]['PERCENT']):
+            rationale[r.description]='MIN_SPECIFIC_PERCENT'
+            f = 100.0/MIN_SPECIFIC[r.description]['PERCENT']
+            r.size = (r.used+r.allocated) * f
+            if (r.size - (r.allocated+r.used)) < MIN_SPECIFIC[r.description]['FREE']:
+                rationale[r.description]='MIN_SPECIFIC_PERCENT MIN_SPECIFIC_FREE'
+                r.size=r.used+r.allocated+MIN_SPECIFIC[r.description]['FREE']
+        elif (  r.description in MIN_SPECIFIC.keys() and (r.size - (r.allocated+r.used)) < MIN_SPECIFIC[r.description]['FREE']):
+            rationale[r.description]='MIN_SPECIFIC_FREE'
+            r.size=r.used+r.allocated+MIN_SPECIFIC[r.description]['FREE']
+        else:
+            continue # If the reservation does not need to be adjusted, move on to the next reservation
+        adj_reservations.append(r) 
+        reservations.remove(r)
+        tot_size -= r.size
+        tot_used -= r.used
+        tot_alloc -= tot_alloc
+        tot_free = tot_size - (tot_used + tot_alloc)
 
+    if debug:
+        print  >> sys.stderr, adj_reservations
+        print  >> sys.stderr, rationale
 
-#print adj_reservations
-#print rationale
+    usage = (tot_used+tot_alloc)/float(tot_size)
+    factor = 1.0 / max(usage, 0.01)
 
-usage = (tot_used+tot_alloc)/float(tot_size)
-factor = 1.0 / max(usage, 0.01)
+    for r in reservations:
+        r.size= (r.used + r.allocated )* factor
+        r.free = r.size - (r.used + r.allocated)
 
-for r in reservations:
-    r.size= (r.used + r.allocated )* factor
-    r.free = r.size - (r.used + r.allocated)
-
-for r in reservations:
-    r.size= (r.used + r.allocated )* factor
-    r.free = r.size - (r.used + r.allocated)
-#print ""
 for r  in adj_reservations:
     print r.description, r.id, int(r.size)
-    #print r
-#print ""
+
 for r in reservations:
     print r.description, r.id, int(r.size)
-    #print r
+
+if debug:
+    print >> sys.stderr, "reservations at end:"
+    for r in reservations:
+        print  >> sys.stderr, r
+    for  r  in adj_reservations:
+        print  >> sys.stderr, r
 
