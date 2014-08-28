@@ -1,0 +1,167 @@
+name: sl5-x86_64-tier3
+summary: Base configuration for a virtualized ATLAS tier 3. 
+version: 2
+release: 1
+os:
+  name: sl
+  version: 5
+  
+hardware:
+  cpus: 4
+  memory: 8192 
+  partitions:
+    "/":
+      size: 5
+      
+packages:
+  - @core
+  - bind-utils
+  - cloudconfig
+  - condor
+  - curl
+  - dhclient
+  - lsof
+  - ntp
+  - openssh-clients
+  - openssh-server
+  - subversion
+  - vim-enhanced
+  - wget
+  - yum
+  - zsh
+  - bash
+  - ksh
+  - tcsh
+  - git
+  - agrep
+  - anacron
+  - automake
+  - blas
+  - busybox
+  - bzip2
+  - chkconfig
+  - crontabs
+  - cvmfs
+  - cvmfs-keys
+  - cvmfs-init-scripts
+  - ganglia-gmond
+  - ganglia-gmond-modules-python 
+  - cvs
+  - dcap
+  - dcap-libs
+  - xrootd-client
+  - xrootd-fuse
+  - xrootd-libs
+  - vim-common
+  - vim-enhanced
+  - htop
+  - wget
+  - which
+  - file
+  - tzdata
+  - tzdata-java
+  - tree
+  - mtr
+  - strace
+  - tar
+  - rpm
+  - sl-release
+  - perl
+  - perl-Compress-Zlib
+  - perl-Config-Tiny
+  - perl-Crypt-DES
+  - perl-Crypt-Rijndael
+  - perl-Digest-HMAC
+  - perl-Digest-SHA1
+  - perl-Error
+  - perl-Git
+  - perl-HTML-Parser
+  - perl-HTML-Tagset
+  - perl-libwww-perl
+  - perl-Net-SNMP
+  - perl-String-CRC32
+  - perl-Test-Manifest
+  - perl-URI
+  - passwd
+  - pcre
+  - openssl
+  - man
+  - man-pages
+  - make
+  - java-1.6.0-openjdk
+  - libaio
+
+ 
+default_repos: false # default is true
+
+repos:
+
+
+#  - name: "centos-plus"
+#    baseurl: "http://dev.racf.bnl.gov/yum/grid/external/rhel/5Client/x86_64"  
+
+   - name: "SL-55-x86_64"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/SL-55-x86_64"
+
+   - name: "SL-55-x86_64-security"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/SL-55-x86_64-security"
+
+   - name: "EPEL-x86_64"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/EPEL-x86_64"  
+
+   - name: "MWT2"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/MWT2"
+   
+   - name: "t3monstable"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/t3monstable"
+
+   - name: "t3monexternal"
+     baseurl: "http://bootstrap.mwt2.org/cobbler/repo_mirror/t3monexternal"
+
+files:
+
+  "/root/.ssh":
+    - "authorized_keys"
+
+  "/etc":
+    - "ntp/step-tickers"
+    - "sysconfig/selinux"
+    - "ssh/sshd_config"
+    - "condor/condor_config"
+    - "condor/config.d/10-base.conf"
+    - "condor/config.d/20-daemon.conf"
+    - "condor/config.d/30-flocking.conf"
+    - "condor/config.d/50-classads.conf"
+    - "inittab"
+    - "ganglia/gmond.conf"
+    - "sysconfig/modules/fuse.modules"
+    - "cvmfs/default.local"
+    - "cvmfs/domain.d/cern.ch.local"
+    - "cvmfs/config.d/atlas.cern.ch.local"
+    - "cvmfs/config.d/atlas-condb.cern.ch.local"
+    - "cvmfs/config.d/atlas-nightlies.cern.ch.local"
+    - "cvmfs/config.d/atlas-nightlies.cern.ch.conf"
+    - "auto.master"
+    - "fuse.conf"
+    - "ganglia/gmond.conf"
+    - "init.d/cloudconfig"
+    - "sysconfig/cloudconfig"
+    - "rc.local.d/mount_filesystems.sh"
+
+post:
+  base:
+    - "chmod +x /etc/init.d/cloudconfig"   
+    - "/sbin/chkconfig cloudconfig on"
+    - "sed -i '/hiddenmenu/ a\serial --unit=0 --speed=115200 \nterminal --timeout=5 serial console ' /boot/grub/grub.conf; sed -i '/kernel/ s/$/ console=tty0 console=ttyS0,115200/g' /boot/grub/grub.conf"
+    - "mkdir -p /share/{home,t3data,t3data2,t3data3}"
+    - "mkdir -p /pnfs/uchicago.edu"
+    - "chown -R root:root /root/.ssh"  
+    - "chmod -R go-rwx /root/.ssh"
+    - "chmod +x /etc/rc.local"
+    - "/sbin/chkconfig sshd on"
+    - "/sbin/chkconfig ntpd on"
+    - "/sbin/chkconfig iptables off"
+    - "/sbin/chkconfig ip6tables off"
+    - "/sbin/chkconfig condor on"
+    - "/sbin/chkconfig gmond on" 
+    - "/usr/sbin/useradd -m uct3"
