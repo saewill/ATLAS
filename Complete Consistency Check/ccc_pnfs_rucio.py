@@ -424,11 +424,7 @@ where r.fileid=m.fileid'
                 time_string = time_string.split('.')[0]
                 size=int(size)
                 t = time.mktime(time.strptime(date+" "+time_string,"%Y-%m-%d %H:%M:%S"))
-                val = poolinfo_by_pnfsid.get(name)
-                if val:
-                    val.append((pool,t,size))
-                else:
-                    poolinfo_by_pnfsid[name] = [(pool,t,size)]
+		poolinfo_by_pnfsid.setdefault(name, []).append((pool,t,size))
         print "%s check pools done" % time.ctime()
 
 
