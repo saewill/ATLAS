@@ -15,4 +15,4 @@ source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
 setupATLAS
 localSetupDQ2Client --skipConfirm
 
-$ccc_path/ccc_pnfs_rucio.py  -nl -o $ccc_outputdir/
+$ccc_path/ccc_pnfs_rucio.py -o $ccc_outputdir/
