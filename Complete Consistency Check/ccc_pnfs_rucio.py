@@ -40,25 +40,22 @@ pnfs_dump_file = None
 lfc_dump_file = None
 check_pools = True
 check_dq2 = True
-check_lfc = True
+check_lfc = False
 min_age = 6*3600 # 7 hours, don't flag any files newer than this
 dq2_cache_dir = '/var/tmp/dq2/' # For caching dq2 lookups
 dq2 = None
 output_dir = ''
 
 def Usage(progname):
-    print "Usage: %s [-o output_dir] [-p pnfs_file] [-l lfc_file] [-np] [-nd] [-nl]" % progname
+    print "Usage: %s [-o output_dir] [-p pnfs_file] [-np] [-nd]" % progname
     print "   normal usage requires no options"
     print "   -m min_age: don't flag files newer than this (default=2 hours)"
     print "         use 's' for seconds(default), 'm'=minutes, 'h'=hours, 'd'=days"
     print "   -o specifies directory for (html) output, default is working directory"
     print "   -p pnfs_file reads pnfsDump output from file, instead of "
     print "         using ssh to run pnfsDump on the pnfs server"
-    print "   -l lfc_file reads lfc database dump from file, instead of"
-    print "         using ssh to execute mysql on the lfc server"
     print "   -np (no pool) skips checking of /dcache/pool on pool nodes"
     print "   -nd (no dq2) skips checking of registered dq2 datasets"
-    print "   -nl (no lfc) skips checking of lfc entries"
 
 if "pychecker" in sys.argv[0]:     
     args = sys.argv[2:] 
@@ -112,7 +109,6 @@ if os.path.exists(config_file):
     try:
         from ccc_config import pnfs_root, \
              pnfs_host, pnfs_dump, \
-             lfc_host, lfc_user, lfc_passwd, \
              pools, sites, site_dirs
     except:
         exc, msg, tb = sys.exc_info()
@@ -134,12 +130,6 @@ else:
     default = "/opt/pnfs/tools/pnfsDump"
     pnfs_dump = raw_input("full path to pnfsDump util? (default: %s) "%
                           default).strip() or default
-    if check_lfc:
-        lfc_host = raw_input("lfc host? ").strip()
-        lfc_user = raw_input("lfc user? ").strip()
-        lfc_passwd = raw_input("lfc password? ").strip()
-    else:
-        lfc_host = lfc_user = lfc_passwd = None
         
     
     if check_dq2:
@@ -349,11 +339,6 @@ where r.fileid=m.fileid'
             (ssh_cmd, host, path)))
                 for (host,path) in pools]
 
-    if check_lfc and not lfc_dump_file:
-        cmds += [('lfc', os.popen(
-            '''%s %s "mysql -u %s -p%s -B -N cns_db <<<'%s'"''' %
-            (ssh_cmd, lfc_host, lfc_user, lfc_passwd, lfc_sql_cmd)))]
-    
     if not pnfs_dump_file:
         cmds += [('pnfs', os.popen("%s %s '%s -d 10 files -f -l'" %
                                    (ssh_cmd, pnfs_host, pnfs_dump)))]
@@ -446,21 +431,6 @@ where r.fileid=m.fileid'
     print "%s path->pnfsid dictionary done" % time.ctime()
 
 
-    # Build dictionary of LFC entries.
-    if check_lfc:
-        lines = cmd_out['lfc'][0]
-        del cmd_out['lfc']
-        for line in lines:
-            sfn,fileid,ctime,guid = line.split()
-            ctime = float(ctime)
-            parts = sfn.split(pnfs_root, 1)
-            if len(parts) == 2:
-                prefix, path = parts
-                lfc_by_path[path] = (fileid, ctime, guid)
-        del lines #save some memory
-        print "%s path->guid dictionary done" % time.ctime()
-
-    
 # Check pools for files which are not in pnfs
 if check_pools:
     msg = "Checking pools against PNFS..."
@@ -566,84 +536,6 @@ if check_pools:
     print "%s pnfs ghost check done" % time.ctime()
     sys.stdout.flush()
 
-
-# Check lfc for entries which are not in pnfs
-if check_lfc:
-    msg = "Checking LFC against PNFS..."
-    print msg,
-    print >> main_page, msg,
-    sys.stdout.flush()
-    n_ghosts=0
-    lfc_ghosts = Page("lfc-ghosts")
-    paths = lfc_by_path.keys()
-    paths.sort()
-    for path in paths:
-        fileid, ctime, guid = lfc_by_path[path]
-        if not pnfsid_by_path.has_key(path) and t0 - ctime > min_age:
-            print >> lfc_ghosts, path, fileid, guid, ctime
-            n_ghosts += 1
-    del paths
-    lfc_ghosts.close()
-    if n_ghosts:
-        msg = plural(n_ghosts, "LFC ghost")
-        print msg
-        print >> main_page, "<a href=%s><b>%s</b></a>" % (lfc_ghosts.filename, msg)
-    else:
-        print "OK"
-        print >> main_page, "OK"
-    print "%s lfc ghost check done" % time.ctime()
-    sys.stdout.flush()
-
-
-    # Check pnfs for entries which are not in lfc
-    msg = "Checking PNFS against LFC..."
-    print msg,
-    print >> main_page, msg,
-    sys.stdout.flush()
-    n_orphans = 0
-    orphan_bytes = 0
-    lfc_orphans = Page("lfc-orphans")
-    paths = pnfsid_by_path.keys()
-    paths.sort()
-    for path in paths:
-        if not path.startswith('atlas'):
-            continue
-            ## skip files we don't expect to be registered in LFC
-            ### XXXX this is a hack
-
-        if '/test/' in path or '/loadtest/' in path:
-            continue
-        if not lfc_by_path.has_key(path):
-            t = None
-            pnfsid = pnfsid_by_path[path]
-            poolinfo = poolinfo_by_pnfsid.get(pnfsid)
-            if poolinfo:
-                pool,mtime,size = poolinfo[0]
-            else:
-                try:
-                    statinfo = os.stat(pnfs_root + path)
-                except:
-                    print "Cannot stat", pnfs_root + path
-                    continue
-                mtime = statinfo[stat.ST_MTIME]
-                size = statinfo[stat.ST_SIZE] ## PNFS may lie
-            if t0 - mtime < min_age:
-                continue
-            print >>lfc_orphans, path, mtime
-            n_orphans += 1
-            orphan_bytes += size
-    del paths
-    lfc_orphans.close()
-    if n_orphans:
-        msg = "%s (%s)" % (plural(n_orphans, "LFC orphan"), unitize(orphan_bytes))
-        print msg
-        print >> main_page, "<a href=%s>%s</a>" % (lfc_orphans.filename, msg)
-    else:
-        print "OK"
-        print >> main_page, "OK"
-    print "%s lfc orphan check done" % time.ctime()
-    sys.stdout.flush()
-
 def scopeof(dsn):
   if dsn.startswith('user.') or dsn.startswith('group.'):
     scope=dsn.split('.', 2)[0:2]
@@ -733,17 +625,11 @@ if check_dq2:
     print msg
     print >> main_page, msg
     print "Will check sites:", " ".join(sites)
-    if check_lfc:
-	    lfc_by_guid={} # Key is guid, value is [path, in_dq2]
-	    for path, (fileid, t, guid) in lfc_by_path.items():
-		lfc_by_guid[guid] = [path, False]
-	    print "%s guid->path map built" % time.ctime()
-    else:
-       print "LFC checking disabled, checking against disk."
-       dq2_orphans = Page("dq2-orphans")
-       n_orphans = 0
-       orphan_bytes = 0
-       orphanpaths = dict( (path,pnfsid) for path,pnfsid in pnfsid_by_path.iteritems() if '/rucio/' in path and '/test/' not in path and '/loadtest/' not in path and '/permanentTests/' not in path )
+    print "Checking DQ2 against disk."
+    dq2_orphans = Page("dq2-orphans")
+    n_orphans = 0
+    orphan_bytes = 0
+    orphanpaths = dict( (path,pnfsid) for path,pnfsid in pnfsid_by_path.iteritems() if '/rucio/' in path and '/test/' not in path and '/loadtest/' not in path and '/permanentTests/' not in path )
       
 
     for site in sites:
@@ -809,17 +695,13 @@ if check_dq2:
                 if frozen and not data_cached:
                     write_cache(dataset, dq2_reply)
                 file_dict, dq2_timestamp = dq2_reply
-                if check_lfc:
-			guids = file_dict.keys()
-			guids.sort()
-                else:
-			dspaths=[]
-			for value in file_dict.values():
-				  m=hashlib.md5()
-				  m.update(value['scope']+':'+value['lfn'])
-				  path=site_dirs[site] + '/rucio/' + value['scope'].replace('.', '/')  + '/' + m.hexdigest()[0:2] + '/' + m.hexdigest()[2:4] + '/' + value['lfn']
-				  dspaths.append(path)
-                        guids=dspaths
+		dspaths=[]
+		for value in file_dict.values():
+			  m=hashlib.md5()
+			  m.update(value['scope']+':'+value['lfn'])
+			  path=site_dirs[site] + '/rucio/' + value['scope'].replace('.', '/')  + '/' + m.hexdigest()[0:2] + '/' + m.hexdigest()[2:4] + '/' + value['lfn']
+			  dspaths.append(path)
+		guids=dspaths
             else:
                 ## XXXX disable this for now, it's slow and it requires a proxy which we may not have
                 ##if is_obsolete(dataset, site):
@@ -832,21 +714,12 @@ if check_dq2:
 
             ok = True
             n = 0
-            if check_lfc:
-		    for guid in guids:
-			if lfc_by_guid.has_key(guid):
-			    lfc_by_guid[guid][1] = True
-			    n += 1
-			else:
-			    lfn = file_dict[guid].get('lfn','???')
-			    ok = False
-            else:
-		    for path in dspaths:
-			if orphanpaths.has_key(path):
-                            n += 1
-			    del orphanpaths[path]
-                        else:
-                            ok = False
+	    for path in dspaths:
+		if orphanpaths.has_key(path):
+		    n += 1
+		    del orphanpaths[path]
+		else:
+		    ok = False
             if replica_complete[dataset]:
                 if ok:
                     if n==0:
@@ -888,80 +761,32 @@ if check_dq2:
         print "%s dq2 dataset check done for site %s" % (time.ctime(), site)
         sys.stdout.flush()
 
-    if check_lfc:
-	    msg = "Checking LFC against DQ2..."
-	    print msg,
-	    print >> main_page, msg,
-	    sys.stdout.flush()
-
-	    dq2_orphans = Page("dq2-orphans")
-	    n_orphans = 0
-	    orphan_bytes = 0
-	    paths = lfc_by_path.keys()
-	    paths.sort()
-	    # Panda mover is retired, no longer need to check these
-	    #sub_re = re.compile("_sub[0-9]+/")
-	    #dis_re = re.compile("_dis[0-9]+/")
-	    for path in paths:
-		 ## Files not in a rucio dir are not expected to be in dq2
-		if '/test/' in path or '/loadtest/' in path or '/permanentTest/s' in path  or '/rucio/' not in path:
-		    continue
-		fileid, ctime, guid = lfc_by_path[path]
-		if t0 - ctime < min_age:  #Too new
-		    continue
-		ignore, in_dq2 = lfc_by_guid.get(guid, [False, False])
-		if not in_dq2:
-		    n_orphans += 1
-		    size = 0
-		    pnfsid = pnfsid_by_path.get(path)
-		    if pnfsid:
-			poolinfo = poolinfo_by_pnfsid.get(pnfsid)
-			if poolinfo:
-			    size = poolinfo[0][SIZE]
-		    if not size:
-			try:
-			    size = os.stat(pnfs_root + path)[stat.ST_SIZE] #PNFS may lie
-			except:
-			    print "Cannot stat", pnfs_root + path
-		    orphan_bytes += size
-		    print >> dq2_orphans, path, fileid, guid, ctime
-	    del paths
-	    if n_orphans:
-		msg = "%s (%s) (dark data)" % (plural(n_orphans, "dq2 orphan"), unitize(orphan_bytes))
-		print msg
-		print >> main_page, "<a href=%s>%s</a>" % (dq2_orphans.filename, msg)
-	    else:
-		print "OK"
-		print >> main_page, "OK"
-	    dq2_orphans.close()
-	    print "%s dq2 versus lfc check done" % time.ctime()
+    n_orphans=len(orphanpaths)
+    orphan_bytes = 0
+    for path,pnfsid in orphanpaths.iteritems():
+	poolinfo = poolinfo_by_pnfsid.get(pnfsid)
+	if poolinfo:
+		size = poolinfo[0][SIZE]
+		if not size:
+		    try:
+			 size = os.stat(pnfs_root + path)[stat.ST_SIZE] #PNFS may lie
+		    except:
+			 print "Cannot stat", pnfs_root + path
+		orphan_bytes += size
+	print >> dq2_orphans, path, size
+    del orphanpaths
+    if n_orphans:
+	msg = "%s (%s) (dark data)" % (plural(n_orphans, "dq2 orphan"), unitize(orphan_bytes))
+	print msg
+	print >> main_page, "<a href=%s>%s</a>" % (dq2_orphans.filename, msg)
     else:
-   	    n_orphans=len(orphanpaths)
-            orphan_bytes = 0
-            for path,pnfsid in orphanpaths.iteritems():
-		poolinfo = poolinfo_by_pnfsid.get(pnfsid)
-                if poolinfo:
-			size = poolinfo[0][SIZE]
-	                if not size:
-                            try:
-                                 size = os.stat(pnfs_root + path)[stat.ST_SIZE] #PNFS may lie
-                            except:
-                                 print "Cannot stat", pnfs_root + path
-                        orphan_bytes += size
-                print >> dq2_orphans, path, size
-            del orphanpaths
-            if n_orphans:
-                msg = "%s (%s) (dark data)" % (plural(n_orphans, "dq2 orphan"), unitize(orphan_bytes))
-                print msg
-                print >> main_page, "<a href=%s>%s</a>" % (dq2_orphans.filename, msg)
-            else:
-                print "OK"
-                print >> main_page, "OK"
-            dq2_orphans.close()
-            print "%s dq2 versus disk check done" % time.ctime()
+	print "OK"
+	print >> main_page, "OK"
+    dq2_orphans.close()
+    print "%s dq2 versus disk check done" % time.ctime()
 
-        
-    done_msg = "Finished at %s" % time.ctime()
+
+done_msg = "Finished at %s" % time.ctime()
 print >> main_page, done_msg
 main_page.close()
 
