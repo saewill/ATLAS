@@ -2,6 +2,8 @@
 
 rcs_id="$Id: ccc_pnfs.py,v 1.13 2010/01/26 19:44:32 cgw Exp $"
 
+# THIS SCRIPT IS DEPRECATED. PLEASE USE ccc_pnfs_rucio.py INSTEAD.
+
 # ccc_pnfs.py: Complete Consistency Check
 #  Three-way consistency check between LFC, dCache pools and /pnfs
 
