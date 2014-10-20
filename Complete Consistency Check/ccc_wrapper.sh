@@ -8,6 +8,11 @@ ccc_outputdir=/usr/local/ccc/output
 exec 1>>$ccc_outputdir/ccc-`date -I`.log 2>&1
 
 cd $ccc_path
-source $ccc_path/setup.sh
+
+export ATLAS_LOCAL_ROOT_BASE=/cvmfs/atlas.cern.ch/repo/ATLASLocalRootBase
+export ALRB_localConfigDir=$HOME/localConfig
+source ${ATLAS_LOCAL_ROOT_BASE}/user/atlasLocalSetup.sh
+setupATLAS
+localSetupDQ2Client --skipConfirm
 
 $ccc_path/ccc_pnfs_rucio.py  -nl -o $ccc_outputdir/
