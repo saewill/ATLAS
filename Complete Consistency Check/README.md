@@ -22,9 +22,11 @@ ccc_pnfs_rucio.py.
 How to Run:
 ----------
 
-The firs time ccc_pnfs_rucio.py is run, it created a file ccc_config.py. You will need to 
-edit this config file with the details of your site. See the example ccc_config.py. 
+CCC requires the dq2 clients to be set up. See ccc_wrapper.sh for an example on an machine
+with CVMFS.
 
+The first time ccc_pnfs_rucio.py is run, it created a file ccc_config.py. You will need to 
+edit this config file with the details of your site. See the example ccc_config.py. 
 
 Usage: ./ccc_pnfs_rucio.py [-o output_dir] [-p pnfs_file] [-l lfc_file] [-np] [-nd] [-nl]
    normal usage requires no options
