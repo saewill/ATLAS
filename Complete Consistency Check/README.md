@@ -1,33 +1,34 @@
-CCC
+Complete Consistency Check
 ---
 
-Complete Consistency Check (CCC) is a tool developed within  US ATLAS to
-perform consistency checking between our storage catalog systems. Currently
+Complete Consistency Check (CCC) is a tool developed within US ATLAS to
+perform consistency checking between ATLAS dataset and file catalogs and local stroage. Currently
 supported systems are DQ2, Rucio, generic disk, and dCache (PNFS/Chimera).
-Support for LFC is deprecated.
+Support for LFC has been deprecated.
 
-ccc_pnfs_rucio.py will download the list of datasets listed in DQ2 for a site, compute
+`ccc_pnfs_rucio.py` will download the list of datasets listed in DQ2 for a site, compute
 Rucio paths for each file in the datasets, and check that against what is in PNFS. It will 
 additionally check PNFS against disk. A report is generated in the output directory with a 
 summary of discrepancies found.
 
-ccc_generic.py checks a list of datasets in DQ2 against files on a generic mounted disk. It
+`ccc_generic.py` checks a list of datasets in DQ2 against files on a generic mounted disk. It
 is as of this writing not updated to compute Rucio paths.  Please contact support@mwt2.org
 if you are interested in a version of ccc_generic.py that supports Rucio.
 
-ccc_pnfs.py is a deprecated script that compares DQ2, LFC, and PNFS.  It is replaced by
-ccc_pnfs_rucio.py.
+`ccc_pnfs.py` is a deprecated script that compares DQ2, LFC, and PNFS.  It is replaced by
+`ccc_pnfs_rucio.py`.
 
 
-How to Run:
+How to run
 ----------
 
-CCC requires the dq2 clients to be set up. See ccc_wrapper.sh for an example on an machine
+CCC requires the dq2 clients to be set up. See `ccc_wrapper.sh` for an example on an machine
 with CVMFS.
 
-The first time ccc_pnfs_rucio.py is run, it created a file ccc_config.py. You will need to 
+The first time `ccc_pnfs_rucio.py` is run, it created a file ccc_config.py. You will need to 
 edit this config file with the details of your site. See the example ccc_config.py. 
 
+```
 Usage: ./ccc_pnfs_rucio.py [-o output_dir] [-p pnfs_file] [-l lfc_file] [-np] [-nd] [-nl]
    normal usage requires no options
    -m min_age: don't flag files newer than this (default=2 hours)
@@ -38,22 +39,23 @@ Usage: ./ccc_pnfs_rucio.py [-o output_dir] [-p pnfs_file] [-l lfc_file] [-np] [-
          using ssh to run pnfsDump on the pnfs server
    -np (no pool) skips checking of /dcache/pool on pool nodes
    -nd (no dq2) skips checking of registered dq2 datasets
+```
 
-See ccc_wrapper.sh for an example of how to run ccc_pnfs_rucio.py.
+See `ccc_wrapper.sh` for an example of how to run `ccc_pnfs_rucio.py`.
 
-Created files:
+Created files
 -------------
 
-The script will create a directory '/var/tmp/dq2/' and use it to cache dq2 responses. As this cache is 
+The script will create a directory `/var/tmp/dq2/` and use it to cache dq2 responses. As this cache is 
 filled out the run time of the script will improve.
 
-A text file /tmp/ccc.lock is created to make sure only one copy of ccc runs at a time.
+A text file `/tmp/ccc.lock` is created to make sure only one copy of ccc runs at a time.
 
-An html report named ccc-DATE-TIME.html will be created in the output directory, along with text files
+An html report named `ccc-DATE-TIME.html` will be created in the output directory, along with text files
 for each of the file states detected. For instance, if there are pnfs orphans, the file pnfs-orphans-DATE-TIME
 is created.
 
-Concepts and terminology:
+Concepts and terminology
 ------------------------
 
 When the storage catalog systems are compared they are organized in a heirarchy, from highest to lowest
