@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-rcs_id="$Id: ccc_pnfs.py,v 1.13 2010/01/26 19:44:32 cgw Exp $"
-
 # ccc_pnfs.py: Complete Consistency Check
-#  Three-way consistency check between LFC, dCache pools and /pnfs
+#  Three-way consistency check between DQ2, dCache pools and /pnfs
 
 import sys, os, fcntl, stat, socket, time, re, marshal, pprint, hashlib
 import fcntl, errno
