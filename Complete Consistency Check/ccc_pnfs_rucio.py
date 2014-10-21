@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-rcs_id="$Id: ccc_pnfs.py,v 1.13 2010/01/26 19:44:32 cgw Exp $"
-
 # ccc_pnfs.py: Complete Consistency Check
-#  Three-way consistency check between LFC, dCache pools and /pnfs
+#  Three-way consistency check between DQ2, dCache pools and /pnfs
 
 import sys, os, fcntl, stat, socket, time, re, marshal, pprint, hashlib
 import fcntl, errno
@@ -25,14 +23,9 @@ except IOError, e:
 t1 = t0 = time.time()
 print "Started at", time.ctime(t0)
 timestamp = time.strftime("%F-%H%M", time.localtime(t0))
-parts = rcs_id.split()
-if len(parts) > 2:
-    version = parts[2]
-else:
-    version = "test"
 
 hostname = socket.gethostname()
-version_msg = "ccc_pnfs.py version %s running on %s" % (version, hostname)
+version_msg = "ccc_pnfs_rucio.py running on %s" % hostname
 print version_msg
 
 config_file = "ccc_config.py"
