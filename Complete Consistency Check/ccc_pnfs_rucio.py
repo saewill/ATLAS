@@ -23,14 +23,9 @@ except IOError, e:
 t1 = t0 = time.time()
 print "Started at", time.ctime(t0)
 timestamp = time.strftime("%F-%H%M", time.localtime(t0))
-parts = rcs_id.split()
-if len(parts) > 2:
-    version = parts[2]
-else:
-    version = "test"
 
 hostname = socket.gethostname()
-version_msg = "ccc_pnfs.py version %s running on %s" % (version, hostname)
+version_msg = "ccc_pnfs_rucio.py running on %s" % hostname
 print version_msg
 
 config_file = "ccc_config.py"
