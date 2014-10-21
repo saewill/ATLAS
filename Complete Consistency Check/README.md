@@ -2,9 +2,11 @@ Complete Consistency Check
 ---
 
 Complete Consistency Check (CCC) is a tool developed within US ATLAS to
-perform consistency checking between ATLAS dataset and file catalogs and local stroage. Currently
-supported systems are DQ2, Rucio, generic disk, and dCache (PNFS/Chimera).
-Support for LFC has been deprecated.
+perform consistency checking between ATLAS dataset and file catalogs and local storage. A
+detailed report is produced listing all files and datasets in inconsistent states. The report
+gives sufficient information to clean up inconsistencies, but does not itself make any changes
+to storage systems, file or dataset catalogs.  Currently supported systems are DQ2, 
+Rucio, generic disk, and dCache (PNFS/Chimera).  Support for LFC has been deprecated.
 
 `ccc_pnfs_rucio.py` will download the list of datasets listed in DQ2 for a site, compute
 Rucio paths for each file in the datasets, and check that against what is in PNFS. It will 
@@ -21,6 +23,8 @@ if you are interested in a version of ccc_generic.py that supports Rucio.
 
 How to run
 ----------
+
+Download ccc_pnfs_rucio.py and ccc_config.py.  
 
 CCC requires the dq2 clients to be set up. See `ccc_wrapper.sh` for an example on an machine
 with CVMFS.
@@ -42,6 +46,10 @@ Usage: ./ccc_pnfs_rucio.py [-o output_dir] [-p pnfs_file] [-l lfc_file] [-np] [-
 ```
 
 See `ccc_wrapper.sh` for an example of how to run `ccc_pnfs_rucio.py`.
+
+Once CCC is running, it can be killed without harming storage systems. However, some clean-up
+may be neccessary:
+
 
 Created files
 -------------
