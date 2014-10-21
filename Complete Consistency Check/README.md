@@ -48,7 +48,11 @@ Usage: ./ccc_pnfs_rucio.py [-o output_dir] [-p pnfs_file] [-l lfc_file] [-np] [-
 See `ccc_wrapper.sh` for an example of how to run `ccc_pnfs_rucio.py`.
 
 Once CCC is running, it can be killed without harming storage systems. However, some clean-up
-may be neccessary:
+may be neccessary.
+
+- `/tmp/ccc.lock` must be manually deleted
+- If the next run of CCC fails with an error about a corrupted marshal file, CCC may have been interrupted while writing a DQ2 cache file.  Delete the file from `/var/tmp/DQ2` and restart CCC.
+- The HTML report will be incomplete. It is recommended to delete the report so as to avoid confusion when reviewing historic CCC results.
 
 
 Created files
