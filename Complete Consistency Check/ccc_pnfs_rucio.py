@@ -283,7 +283,7 @@ if check_dq2:
         from dq2.common.DQConstants import DatasetState
         dq2 = DQ2()
     except:
-        msg = """Cannot import dq2.clientapi, not checking dq2
+        msg = """Cannot import dq2.clientapi or no valid proxy found, not checking dq2
 Finished at %s""" % time.ctime()
         print >> main_page, msg
         print msg
